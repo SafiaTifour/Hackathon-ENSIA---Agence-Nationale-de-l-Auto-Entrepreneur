@@ -7,7 +7,9 @@ class PipelineManager:
         self.steps = [
             "../pipeline/discard_non_valid.py",
             "../pipeline/discard_internal_redundant.py",
-            "../pipeline/discard_external_redundant.py"
+            "../pipeline/discard_external_redundant.py",
+            "../pipeline/discard_commercial_activities.py",
+            "../pipeline/discard_crafts.py"
         ]
 
     def run_step(self, script_name):
