@@ -16,7 +16,7 @@ df_commercial = pd.read_csv(commercial_activities_path, header=None, names=["nam
 commercial_list = df_commercial["name"].dropna().tolist()  # Remove any NaN values
 commercial_embeddings = model.encode(commercial_list, convert_to_tensor=True, normalize_embeddings=True)
 
-# Function to check duplicates
+# Function to check duplicates and calculate sum_similarity
 def check_duplicates(suggestions, threshold=0.60):
     filtered_activities = []
     discarded_activities = []
@@ -32,18 +32,22 @@ def check_duplicates(suggestions, threshold=0.60):
             continue
 
         max_similarity, nearest_index = similarity_scores.max(dim=1)
-        max_similarity = max_similarity.item()
-        nearest_activity = commercial_list[nearest_index.item()]
+        sum_similarity = similarity_scores.sum().item()  # Sum of all similarity scores
 
-        if max_similarity >= threshold:
-            discarded_activities.append(row)
+        row_data = row.to_dict()
+
+        if max_similarity.item() >= threshold:
+            discarded_activities.append(row_data)
         else:
-            filtered_activities.append(row)
+            filtered_activities.append(row_data)
 
     return pd.DataFrame(filtered_activities), pd.DataFrame(discarded_activities)
 
 # Run duplicate detection against commercial activities
 df_final, df_discarded_external = check_duplicates(df_filtered)
+
+# Sort final data by sum_similarity in descending order
+df_final = df_final.sort_values(by="sum_similarity", ascending=True)
 
 # Save outputs
 final_output = "../../data/final/final_suggested_activities.xlsx"

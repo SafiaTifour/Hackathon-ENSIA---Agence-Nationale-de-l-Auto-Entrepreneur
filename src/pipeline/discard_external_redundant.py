@@ -16,7 +16,7 @@ df_current = pd.read_excel(current_activities_path)
 current_list = df_current["name"].tolist()
 current_embeddings = model.encode(current_list, convert_to_tensor=True, normalize_embeddings=True)
 
-# Function to check duplicates
+# Function to check duplicates and compute similarity sum
 def check_duplicates(suggestions, threshold=0.60):
     filtered_activities = []
     discarded_activities = []
@@ -24,14 +24,19 @@ def check_duplicates(suggestions, threshold=0.60):
     for _, row in suggestions.iterrows():
         new_embedding = model.encode([row["name"] + " - " + row["description"]], convert_to_tensor=True, normalize_embeddings=True)
         similarity_scores = util.pytorch_cos_sim(new_embedding, current_embeddings)
+        sum_similarity = similarity_scores.sum().item()  # Sum of all similarities
         max_similarity, nearest_index = similarity_scores.max(dim=1)
         max_similarity = max_similarity.item()
         nearest_activity = current_list[nearest_index.item()]
 
+        row_data = row.to_dict()
+        row_data["sum_similarity"] = sum_similarity
+
+
         if max_similarity >= threshold:
-            discarded_activities.append(row)
+            discarded_activities.append(row_data)
         else:
-            filtered_activities.append(row)
+            filtered_activities.append(row_data)
 
     return pd.DataFrame(filtered_activities), pd.DataFrame(discarded_activities)
 

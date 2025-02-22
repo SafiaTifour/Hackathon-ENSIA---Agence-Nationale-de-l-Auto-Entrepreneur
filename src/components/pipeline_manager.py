@@ -6,6 +6,9 @@ class PipelineManager:
     def __init__(self):
         self.steps = [
             "../pipeline/discard_non_valid.py",
+            "../pipeline/discard_bad_words.py",
+
+
             "../pipeline/discard_internal_redundant.py",
             "../pipeline/discard_external_redundant.py",
             "../pipeline/discard_commercial_activities.py",
